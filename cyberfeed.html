@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>// CYBERFEED</title>
+
+<!-- ===== iPad / home-screen web-app behaviour ===== -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CYBERFEED">
+<meta name="theme-color" content="#0a0a0f">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%230a0a0f'/%3E%3Crect x='6' y='6' width='168' height='168' fill='none' stroke='%2300f0ff' stroke-width='4'/%3E%3Ctext x='90' y='108' font-family='monospace' font-size='64' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%3E_%3C/text%3E%3C/svg%3E">
+
+<!-- ===== Fonts ===== -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+/* =========================================================
+   THEME VARIABLES — tweak colours here
+   ========================================================= */
+:root{
+  --bg:            #0a0a0f;
+  --bg-elevated:   #101018;
+  --bg-card:       #13131d;
+  --border:        #23232f;
+  --border-hover:  #3a3a4a;
+
+  --cyan:          #00f0ff;
+  --magenta:       #ff2a6d;
+  --purple:        #b967ff;
+  --green:         #39ff14;
+  --amber:         #ffb02e;
+
+  --text:          #e8e8f2;
+  --text-dim:      #9494a8;
+  --text-faint:    #5c5c70;
+
+  --cat-cyber:     var(--cyan);
+  --cat-geopol:    var(--magenta);
+
+  --font-display:  'Orbitron', sans-serif;
+  --font-mono:     'JetBrains Mono', monospace;
+  --font-body:     'Inter', -apple-system, sans-serif;
+}
+
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html,body{
+  margin:0; padding:0; height:100%;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-body);
+  -webkit-font-smoothing:antialiased;
+  overscroll-behavior-y:contain;
+}
+
+body{
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0,240,255,0.07), transparent),
+    radial-gradient(ellipse 60% 40% at 100% 0%, rgba(255,42,109,0.06), transparent);
+  background-attachment:fixed;
+  padding-bottom:calc(2.5rem + env(safe-area-inset-bottom));
+}
+
+a{ color:inherit; }
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+header{
+  position:sticky; top:0; z-index:50;
+  background:rgba(10,10,15,0.88);
+  backdrop-filter:blur(14px) saturate(140%);
+  -webkit-backdrop-filter:blur(14px) saturate(140%);
+  border-bottom:1px solid var(--border);
+  padding:env(safe-area-inset-top) 0 0 0;
+}
+
+.header-inner{
+  max-width:1400px; margin:0 auto;
+  padding:0.9rem 1.25rem 0.75rem;
+  display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  flex-wrap:wrap;
+}
+
+.brand{ display:flex; align-items:center; gap:1rem; }
+
+.logo{
+  position:relative;
+  font-family:var(--font-display);
+  font-weight:800;
+  font-size:clamp(1.3rem, 2.4vw, 1.9rem);
+  letter-spacing:0.06em;
+  color:var(--text);
+  text-shadow:0 0 12px rgba(0,240,255,0.55), 0 0 28px rgba(0,240,255,0.25);
+  white-space:nowrap;
+}
+.logo::before, .logo::after{
+  content:attr(data-text);
+  position:absolute; left:0; top:0; width:100%;
+  overflow:hidden; background:var(--bg);
+  clip-path:inset(0 0 0 0);
+}
+.logo::before{ color:var(--cyan); z-index:-1; animation:glitch-1 5.2s infinite steps(1); }
+.logo::after{ color:var(--magenta); z-index:-2; animation:glitch-2 5.2s infinite steps(1); }
+@keyframes glitch-1{
+  0%,92%,100%{ clip-path:inset(0 0 0 0); transform:translate(0,0); opacity:0; }
+  93%{ clip-path:inset(10% 0 60% 0); transform:translate(-2px,0); opacity:0.85; }
+  95%{ clip-path:inset(60% 0 5% 0); transform:translate(2px,0); opacity:0.85; }
+  97%{ clip-path:inset(30% 0 40% 0); transform:translate(-1px,0); opacity:0.85; }
+}
+@keyframes glitch-2{
+  0%,92%,100%{ clip-path:inset(0 0 0 0); transform:translate(0,0); opacity:0; }
+  93%{ clip-path:inset(70% 0 5% 0); transform:translate(2px,0); opacity:0.85; }
+  95%{ clip-path:inset(15% 0 55% 0); transform:translate(-2px,0); opacity:0.85; }
+  97%{ clip-path:inset(45% 0 20% 0); transform:translate(1px,0); opacity:0.85; }
+}
+
+.status-line{
+  font-family:var(--font-mono); font-size:0.72rem; color:var(--text-faint);
+  display:flex; align-items:center; gap:0.5rem; white-space:nowrap;
+}
+.status-dot{
+  width:7px; height:7px; border-radius:50%; background:var(--green);
+  box-shadow:0 0 6px var(--green), 0 0 12px var(--green);
+  animation:pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot{ 0%,100%{opacity:1;} 50%{opacity:0.35;} }
+
+.controls{ display:flex; align-items:center; gap:0.9rem; }
+
+#refresh-btn{
+  width:42px; height:42px; border-radius:50%;
+  border:1px solid var(--border); background:var(--bg-elevated);
+  color:var(--cyan); font-size:1.15rem;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:border-color .2s, box-shadow .2s, transform .15s;
+  flex-shrink:0;
+}
+#refresh-btn:hover{ border-color:var(--cyan); box-shadow:0 0 14px rgba(0,240,255,0.35); }
+#refresh-btn:active{ transform:scale(0.92); }
+#refresh-btn.spinning svg{ animation:spin 0.9s linear infinite; }
+@keyframes spin{ to{ transform:rotate(360deg); } }
+
+/* Tabs */
+.tabs{
+  max-width:1400px; margin:0 auto;
+  padding:0 1.25rem 0.9rem;
+  display:flex; gap:0.5rem; flex-wrap:wrap;
+}
+.tab{
+  font-family:var(--font-mono); font-weight:500; font-size:0.85rem;
+  letter-spacing:0.05em; text-transform:uppercase;
+  padding:0.55rem 1rem; min-height:44px;
+  display:flex; align-items:center;
+  border-radius:6px; border:1px solid var(--border);
+  background:var(--bg-elevated); color:var(--text-dim);
+  cursor:pointer; transition:all .18s; user-select:none;
+}
+.tab .count{ color:var(--text-faint); margin-left:0.45em; }
+.tab:hover{ border-color:var(--border-hover); color:var(--text); }
+.tab.active{ color:var(--bg); font-weight:700; }
+.tab.active .count{ color:rgba(10,10,15,0.6); }
+.tab[data-tab="all"].active{ background:var(--text); border-color:var(--text); box-shadow:0 0 16px rgba(232,232,242,0.25); }
+.tab[data-tab="cyber"].active{ background:var(--cyan); border-color:var(--cyan); box-shadow:0 0 16px rgba(0,240,255,0.5); }
+.tab[data-tab="geopol"].active{ background:var(--magenta); border-color:var(--magenta); box-shadow:0 0 16px rgba(255,42,109,0.5); }
+
+/* Failed-feed banner */
+#fail-banner{
+  max-width:1400px; margin:0 auto; padding:0 1.25rem;
+  font-family:var(--font-mono); font-size:0.75rem; color:var(--amber);
+  display:none; align-items:center; gap:0.5rem; flex-wrap:wrap;
+  padding-bottom:0.75rem;
+}
+#fail-banner.show{ display:flex; }
+#fail-banner b{ color:var(--amber); }
+
+/* =========================================================
+   GRID / CARDS
+   ========================================================= */
+main{ max-width:1400px; margin:0 auto; padding:1.25rem; }
+
+#grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(320px, 1fr));
+  gap:1rem;
+}
+
+.card{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:1.1rem 1.2rem;
+  display:flex; flex-direction:column; gap:0.6rem;
+  text-decoration:none; color:var(--text);
+  transition:border-color .2s, box-shadow .2s, transform .15s;
+  min-height:150px;
+}
+.card:hover, .card:focus-visible{
+  transform:translateY(-2px);
+  border-color:var(--card-glow, var(--cyan));
+  box-shadow:0 0 22px -4px var(--card-glow, rgba(0,240,255,0.55));
+}
+.card.cyber{ --card-glow:var(--cat-cyber); }
+.card.geopol{ --card-glow:var(--cat-geopol); }
+
+.card-top{ display:flex; align-items:center; justify-content:space-between; gap:0.6rem; }
+
+.chip{
+  font-family:var(--font-mono); font-size:0.68rem; font-weight:700;
+  letter-spacing:0.04em; text-transform:uppercase;
+  padding:0.25rem 0.6rem; border-radius:100px;
+  border:1px solid currentColor;
+  white-space:nowrap;
+}
+.card.cyber .chip{ color:var(--cat-cyber); background:rgba(0,240,255,0.08); }
+.card.geopol .chip{ color:var(--cat-geopol); background:rgba(255,42,109,0.08); }
+
+.timestamp{ font-family:var(--font-mono); font-size:0.72rem; color:var(--text-faint); white-space:nowrap; }
+
+.headline{
+  font-weight:700; font-size:1rem; line-height:1.35;
+  color:var(--text);
+}
+.card:hover .headline{ color:var(--card-glow, var(--cyan)); }
+
+.snippet{
+  font-size:0.85rem; line-height:1.5; color:var(--text-dim);
+  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+
+.card-bottom{
+  margin-top:auto; display:flex; align-items:center; justify-content:space-between;
+  font-family:var(--font-mono); font-size:0.7rem; color:var(--text-faint);
+}
+
+/* Skeleton loading cards */
+.skeleton{
+  background:var(--bg-card); border:1px solid var(--border); border-radius:10px;
+  padding:1.1rem 1.2rem; min-height:150px; display:flex; flex-direction:column; gap:0.7rem;
+}
+.skel-line{
+  height:0.7rem; border-radius:4px;
+  background:linear-gradient(90deg, var(--border) 25%, #2a2a3a 50%, var(--border) 75%);
+  background-size:200% 100%;
+  animation:shimmer 1.6s infinite linear;
+}
+@keyframes shimmer{ 0%{background-position:200% 0;} 100%{background-position:-200% 0;} }
+.skel-line.chip-w{ width:35%; height:1.1rem; border-radius:100px; }
+.skel-line.w-90{ width:90%; }
+.skel-line.w-70{ width:70%; }
+.skel-line.w-50{ width:50%; }
+
+.empty-state{
+  grid-column:1/-1; text-align:center; padding:3rem 1rem;
+  color:var(--text-faint); font-family:var(--font-mono); font-size:0.9rem;
+}
+
+footer{
+  max-width:1400px; margin:0 auto; padding:1.5rem 1.25rem 0.5rem;
+  font-family:var(--font-mono); font-size:0.7rem; color:var(--text-faint);
+  text-align:center;
+}
+
+/* Landscape / larger screens: a touch more breathing room */
+@media (min-width:900px){
+  #grid{ grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:1.25rem; }
+}
+@media (max-width:480px){
+  .header-inner{ padding:0.8rem 1rem 0.6rem; }
+  .tabs{ padding:0 1rem 0.8rem; }
+  main{ padding:1rem; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <div class="logo" data-text="// CYBERFEED">// CYBERFEED</div>
+    </div>
+    <div class="controls">
+      <div class="status-line">
+        <span class="status-dot"></span>
+        <span id="last-updated">never updated</span>
+      </div>
+      <button id="refresh-btn" title="Refresh feeds" aria-label="Refresh feeds">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12a9 9 0 1 1-2.64-6.36"/>
+          <path d="M21 3v6h-6"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <div class="tab active" data-tab="all">ALL <span class="count" id="count-all">0</span></div>
+    <div class="tab" data-tab="cyber">Cyber <span class="count" id="count-cyber">0</span></div>
+    <div class="tab" data-tab="geopol">Geopol <span class="count" id="count-geopol">0</span></div>
+  </div>
+
+  <div id="fail-banner"></div>
+</header>
+
+<main>
+  <div id="grid"></div>
+</main>
+
+<footer>CYBERFEED :: client-side aggregator :: auto-refresh every 15 min :: sources via rss2json / allorigins proxies</footer>
+
+<script>
+/* =========================================================
+   FEED CONFIG — add / remove / edit feeds here.
+   Each entry needs a display `name` and the feed's `url`.
+   Keys of FEEDS ("cyber", "geopol") are the two categories.
+   ========================================================= */
+const FEEDS = {
+  cyber: [
+    { name: "The Hacker News",   url: "https://feeds.feedburner.com/TheHackersNews" },
+    { name: "BleepingComputer",  url: "https://www.bleepingcomputer.com/feed/" },
+    { name: "Krebs on Security", url: "https://krebsonsecurity.com/feed/" },
+    { name: "NCSC UK",           url: "https://www.ncsc.gov.uk/api/1/services/v1/all-rss-feed.xml" },
+    { name: "CISA Advisories",   url: "https://www.cisa.gov/cybersecurity-advisories/all.xml" },
+    { name: "Dark Reading",      url: "https://www.darkreading.com/rss.xml" }
+  ],
+  geopol: [
+    { name: "Al Jazeera",        url: "https://www.aljazeera.com/xml/rss/all.xml" },
+    { name: "Reuters World",     url: "https://feeds.reuters.com/reuters/worldNews" },
+    { name: "BBC World",         url: "https://feeds.bbci.co.uk/news/world/rss.xml" },
+    { name: "The Guardian World",url: "https://www.theguardian.com/world/rss" },
+    { name: "War on the Rocks",  url: "https://warontherocks.com/feed/" }
+  ]
+};
+
+const CONFIG = {
+  RSS2JSON_ENDPOINT: "https://api.rss2json.com/v1/api.json?rss_url=",
+  ALLORIGINS_ENDPOINT: "https://api.allorigins.win/raw?url=",
+  REFRESH_INTERVAL_MS: 15 * 60 * 1000, // 15 minutes
+  SNIPPET_MAX_LEN: 200,
+  SKELETON_COUNT: 9
+};
+
+/* =========================================================
+   STATE
+   ========================================================= */
+const state = {
+  articles: [],     // flattened, normalised articles from all feeds
+  failedSources: [], // display names of feeds that failed both proxies this cycle
+  activeTab: "all",
+  loading: false,
+  everLoaded: false
+};
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+
+// Strip HTML tags from a string safely using an inert DOMParser document
+// (parsed-but-not-inserted documents don't execute scripts or load resources).
+function stripHtml(html) {
+  if (!html) return "";
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  return (doc.body.textContent || "").replace(/\s+/g, " ").trim();
+}
+
+function truncate(str, max) {
+  if (!str || str.length <= max) return str || "";
+  return str.slice(0, max).replace(/\s+\S*$/, "") + "…";
+}
+
+function parseDate(raw) {
+  if (!raw) return null;
+  const d = new Date(raw);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function timeAgo(date) {
+  if (!date) return "unknown date";
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (seconds < 0) return "just now";
+  if (seconds < 60) return "just now";
+  const mins = Math.floor(seconds / 60);
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
+function getLink(el) {
+  const linkEl = el.querySelector("link");
+  if (!linkEl) return "";
+  return linkEl.getAttribute("href") || linkEl.textContent.trim();
+}
+
+function getText(el, tag) {
+  const node = el.querySelector(tag);
+  return node ? node.textContent.trim() : "";
+}
+
+/* =========================================================
+   FETCHING — primary: rss2json (clean JSON)
+              fallback: allorigins raw + manual XML parse
+   ========================================================= */
+
+async function fetchViaRss2json(feed) {
+  const apiUrl = CONFIG.RSS2JSON_ENDPOINT + encodeURIComponent(feed.url);
+  const res = await fetch(apiUrl);
+  if (!res.ok) throw new Error("rss2json HTTP " + res.status);
+  const data = await res.json();
+  if (data.status !== "ok" || !Array.isArray(data.items)) {
+    throw new Error("rss2json returned non-ok status");
+  }
+  return data.items.map(item => ({
+    title: stripHtml(item.title) || "(untitled)",
+    link: item.link || "#",
+    pubDate: parseDate(item.pubDate),
+    description: truncate(stripHtml(item.description || item.content || ""), CONFIG.SNIPPET_MAX_LEN),
+    source: feed.name,
+    category: feed.category
+  }));
+}
+
+async function fetchViaAllOrigins(feed) {
+  const apiUrl = CONFIG.ALLORIGINS_ENDPOINT + encodeURIComponent(feed.url);
+  const res = await fetch(apiUrl);
+  if (!res.ok) throw new Error("allorigins HTTP " + res.status);
+  const text = await res.text();
+  const xml = new DOMParser().parseFromString(text, "application/xml");
+  if (xml.querySelector("parsererror")) throw new Error("XML parse error");
+
+  const items = Array.from(xml.querySelectorAll("item, entry"));
+  if (!items.length) throw new Error("no items found in feed");
+
+  return items.map(el => {
+    const rawDate = getText(el, "pubDate") || getText(el, "updated") || getText(el, "published");
+    const rawDesc = getText(el, "description") || getText(el, "summary") || getText(el, "content");
+    return {
+      title: stripHtml(getText(el, "title")) || "(untitled)",
+      link: getLink(el) || "#",
+      pubDate: parseDate(rawDate),
+      description: truncate(stripHtml(rawDesc), CONFIG.SNIPPET_MAX_LEN),
+      source: feed.name,
+      category: feed.category
+    };
+  });
+}
+
+// Try rss2json first; on any failure, fall back to allorigins.
+// Never throws — always resolves with { ok, feed, items }.
+async function fetchFeedWithFallback(feed) {
+  try {
+    return { feed, items: await fetchViaRss2json(feed), ok: true };
+  } catch (err1) {
+    try {
+      return { feed, items: await fetchViaAllOrigins(feed), ok: true };
+    } catch (err2) {
+      console.warn(`[CYBERFEED] Feed unavailable: ${feed.name}`, err1, err2);
+      return { feed, items: [], ok: false };
+    }
+  }
+}
+
+async function loadAll() {
+  state.loading = true;
+  updateRefreshButton();
+
+  const allFeeds = [
+    ...FEEDS.cyber.map(f => ({ ...f, category: "cyber" })),
+    ...FEEDS.geopol.map(f => ({ ...f, category: "geopol" }))
+  ];
+
+  if (!state.everLoaded) renderSkeletons();
+
+  const results = await Promise.allSettled(allFeeds.map(fetchFeedWithFallback));
+
+  const articles = [];
+  const failed = [];
+  results.forEach(r => {
+    if (r.status === "fulfilled") {
+      const { feed, items, ok } = r.value;
+      if (!ok) failed.push(feed.name);
+      articles.push(...items);
+    }
+  });
+
+  state.articles = articles;
+  state.failedSources = failed;
+  state.loading = false;
+  state.everLoaded = true;
+
+  document.getElementById("last-updated").textContent =
+    "updated " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
+  updateRefreshButton();
+  render();
+}
+
+/* =========================================================
+   RENDERING
+   ========================================================= */
+
+function sortByDateDesc(list) {
+  return [...list].sort((a, b) => {
+    const ta = a.pubDate ? a.pubDate.getTime() : 0;
+    const tb = b.pubDate ? b.pubDate.getTime() : 0;
+    return tb - ta;
+  });
+}
+
+function renderSkeletons() {
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  for (let i = 0; i < CONFIG.SKELETON_COUNT; i++) {
+    const el = document.createElement("div");
+    el.className = "skeleton";
+    el.innerHTML = `
+      <div class="skel-line chip-w"></div>
+      <div class="skel-line w-90"></div>
+      <div class="skel-line w-70"></div>
+      <div class="skel-line w-50"></div>
+    `;
+    grid.appendChild(el);
+  }
+}
+
+function buildCard(article) {
+  const card = document.createElement("a");
+  card.className = `card ${article.category}`;
+  card.href = article.link;
+  card.target = "_blank";
+  card.rel = "noopener noreferrer";
+
+  const top = document.createElement("div");
+  top.className = "card-top";
+
+  const chip = document.createElement("span");
+  chip.className = "chip";
+  chip.textContent = article.source;
+
+  const ts = document.createElement("span");
+  ts.className = "timestamp";
+  ts.textContent = timeAgo(article.pubDate);
+
+  top.appendChild(chip);
+  top.appendChild(ts);
+
+  const headline = document.createElement("div");
+  headline.className = "headline";
+  headline.textContent = article.title;
+
+  card.appendChild(top);
+  card.appendChild(headline);
+
+  if (article.description) {
+    const snippet = document.createElement("div");
+    snippet.className = "snippet";
+    snippet.textContent = article.description;
+    card.appendChild(snippet);
+  }
+
+  const bottom = document.createElement("div");
+  bottom.className = "card-bottom";
+  bottom.innerHTML = `<span>${article.category === "cyber" ? "CYBER" : "GEOPOL"}</span><span>↗ open</span>`;
+  card.appendChild(bottom);
+
+  return card;
+}
+
+function render() {
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+
+  const cyberArticles = state.articles.filter(a => a.category === "cyber");
+  const geopolArticles = state.articles.filter(a => a.category === "geopol");
+
+  document.getElementById("count-all").textContent = state.articles.length;
+  document.getElementById("count-cyber").textContent = cyberArticles.length;
+  document.getElementById("count-geopol").textContent = geopolArticles.length;
+
+  let list;
+  if (state.activeTab === "cyber") list = cyberArticles;
+  else if (state.activeTab === "geopol") list = geopolArticles;
+  else list = state.articles;
+
+  list = sortByDateDesc(list);
+
+  if (!list.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.textContent = state.loading ? "Loading feeds…" : "No articles loaded for this view yet.";
+    grid.appendChild(empty);
+  } else {
+    const frag = document.createDocumentFragment();
+    list.forEach(a => frag.appendChild(buildCard(a)));
+    grid.appendChild(frag);
+  }
+
+  renderFailBanner();
+}
+
+function renderFailBanner() {
+  const banner = document.getElementById("fail-banner");
+  if (!state.failedSources.length) {
+    banner.classList.remove("show");
+    banner.textContent = "";
+    return;
+  }
+  banner.classList.add("show");
+  banner.innerHTML = `⚠ Feed unavailable: <b>${state.failedSources.map(s => escapeText(s)).join(", ")}</b>`;
+}
+
+function escapeText(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function updateRefreshButton() {
+  const btn = document.getElementById("refresh-btn");
+  btn.classList.toggle("spinning", state.loading);
+}
+
+/* =========================================================
+   TABS + REFRESH + AUTO-REFRESH WIRING
+   ========================================================= */
+
+document.getElementById("tabs").addEventListener("click", (e) => {
+  const tab = e.target.closest(".tab");
+  if (!tab) return;
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  tab.classList.add("active");
+  state.activeTab = tab.dataset.tab;
+  render();
+});
+
+document.getElementById("refresh-btn").addEventListener("click", () => {
+  if (state.loading) return;
+  loadAll();
+});
+
+// Also refresh relative timestamps periodically without refetching
+setInterval(() => { if (!state.loading) render(); }, 60 * 1000);
+
+// Initial load + auto-refresh every 15 minutes
+loadAll();
+setInterval(loadAll, CONFIG.REFRESH_INTERVAL_MS);
+</script>
+
+</body>
+</html>
